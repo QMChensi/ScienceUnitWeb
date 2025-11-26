@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>渊穹科技综合联合体 | ANSTC</title>
+    <meta name="description" content="徐州市第一中学 - 渊穹科技综合联合体官方网站 (2025-2027)" />
+    
+    <!-- 1. Tailwind CSS (Styling) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. React & ReactDOM (Core Framework - UMD Version for stability) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- 3. Babel (Compiles JSX in browser) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- 4. Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100;300;400;500;700;900&family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Configuration -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              anstc: {
+                black: '#050505',
+                dark: '#0a0a0a',
+                panel: '#111111',
+                accent: '#3b82f6',
+              }
+            },
+            fontFamily: {
+              sans: ['"Noto Sans SC"', 'sans-serif'],
+              tech: ['"Orbitron"', 'sans-serif'],
+              mono: ['"Share Tech Mono"', 'monospace'],
+            },
+            animation: {
+              'spin-slow': 'spin 20s linear infinite',
+              'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+            },
+            keyframes: {
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      body {
+        background-color: #050505;
+        color: #e5e5e5;
+        overflow-x: hidden;
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #0a0a0a; }
+      ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #555; }
+      
+      .stroke-text {
+        -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
+        color: transparent;
+      }
+      .bg-grid-pattern {
+        background-image: linear-gradient(to right, #ffffff05 1px, transparent 1px),
+                          linear-gradient(to bottom, #ffffff05 1px, transparent 1px);
+        background-size: 40px 40px;
+      }
+
+      /* Animation Utility Class */
+      .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s ease-out;
+      }
+      .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    </style>
+  <link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+
+    <!-- Main Application Script -->
+    <script type="text/babel">
+      const { useState, useEffect, useRef } = React;
+
+      // --- ICON SYSTEM (Inlined for reliability) ---
+      const Icons = {
+        Rocket: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.1 4-1 4-1"/><path d="M12 15v5s3.03-.55 4-2c1.1-1.62 1-4 1-4"/></svg>,
+        Cpu: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3"/><path d="M15 1v3"/><path d="M9 20v3"/><path d="M15 20v3"/><path d="M20 9h3"/><path d="M20 14h3"/><path d="M1 9h3"/><path d="M1 14h3"/></svg>,
+        Microscope: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg>,
+        Atom: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="1"/><path d="M20.2 20.2c2.04-2.03.02-7.36-4.5-11.9-4.54-4.52-9.87-6.54-11.9-4.5-2.04 2.03-.02 7.36 4.5 11.9 4.54 4.52 9.87 6.54 11.9 4.5Z"/><path d="M15.7 15.7c4.52-4.54 6.54-9.87 4.5-11.9-2.03-2.04-7.36-.02-11.9 4.5-4.52 4.54-6.54 9.87-4.5 11.9 2.03 2.04 7.36.02 11.9-4.5Z"/></svg>,
+        Zap: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+        FlaskConical: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></svg>,
+        ShieldAlert: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>,
+        Calculator: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>,
+        Users: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+        Truck: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M10 17h4V5H2v12h3"/><path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5"/><path d="M14 17h1"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>,
+        Megaphone: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>,
+        Calendar: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
+        HeartPulse: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></svg>,
+        PenTool: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>,
+        Camera: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
+        Radio: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>,
+        Palette: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>,
+        Stethoscope: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>,
+        Gamepad2: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg>,
+        Star: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+        Menu: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>,
+        X: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 6 6 18"/><path d="m6 6 18 12"/></svg>,
+        ArrowRight: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
+        MapPin: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>,
+        Mail: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>,
+        ChevronDown: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m6 9 6 6 6-6"/></svg>,
+        GraduationCap: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
+        Lightbulb: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>,
+        BookOpen: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+        Newspaper: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>,
+        Shield: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+      };
+
+      // --- DATA CONSTANTS ---
+      const ORG_STRUCTURE = {
+        STUDIO: {
+          name: "渊穹技术应用综合工作室",
+          enName: "Aether Nexus Tech Studio",
+          description: "联合体最高决策机构与对外窗口。负责文创开发、校刊发行、基金管理及校友资源对接。",
+          icon: Icons.Star,
+          roles: ["文创补给站", "墨枢奇点新媒介报", "德育与科研基金"]
+        },
+        DIVISIONS: [
+          {
+            id: "RESEARCH",
+            name: "科研科",
+            enName: "Scientific Research Div",
+            lead: "CTO (技术主管)",
+            color: "border-blue-500",
+            bg: "bg-blue-500/10",
+            departments: [
+              { name: "工程机械构建部", en: "Engineering & Mechanical", icon: Icons.Zap, desc: "3D打印、精密结构设计与自动化控制。" },
+              { name: "航空航天部", en: "Aerospace & Aeronautics", icon: Icons.Rocket, desc: "无人机系统、空气动力学与飞行器设计。" },
+              { name: "AI与信息技术部", en: "AI & Info Tech", icon: Icons.Cpu, desc: "人工智能算法、网络攻防与软件开发。" },
+              { name: "生物生态学部", en: "Bio & Ecology", icon: Icons.Microscope, desc: "微观生物研究、生态循环系统模拟。" },
+              { name: "天文学部", en: "Astronomy & Astrophysics", icon: Icons.Atom, desc: "深空观测、天体物理与天文摄影。" },
+              { name: "通用化学技术部", en: "General Chemistry", icon: Icons.FlaskConical, desc: "新材料合成与化学反应动力学。" },
+              { name: "军工科技部", en: "Military Tech", icon: Icons.ShieldAlert, desc: "前沿国防科技理论研究与模型推演。" },
+            ]
+          },
+          {
+            id: "ADMIN",
+            name: "事务科",
+            enName: "Administrative Div",
+            lead: "CAO (行政主管)",
+            color: "border-gray-400",
+            bg: "bg-gray-500/10",
+            departments: [
+              { name: "商务部", en: "Business & Finance", icon: Icons.Calculator, desc: "资金管理、义卖筹备与外部赞助对接。" },
+              { name: "人事部", en: "Human Resources", icon: Icons.Users, desc: "人员档案管理、面试考核与换届归档。" },
+              { name: "后勤部", en: "Logistics", icon: Icons.Truck, desc: "物资采购、设备运输与场地维护。" },
+              { name: "宣传与调研部", en: "Publicity & Research", icon: Icons.Megaphone, desc: "视觉设计、宣发物料制作与民意调研。" },
+              { name: "活动策划部", en: "Event Planning", icon: Icons.Calendar, desc: "大型活动统筹、流程设计与校方对接。" },
+            ]
+          },
+          {
+            id: "COMPREHENSIVE",
+            name: "综合科",
+            enName: "Comprehensive Div",
+            lead: "CCO (综合主管)",
+            color: "border-purple-500",
+            bg: "bg-purple-500/10",
+            departments: [
+              { name: "伦理心域研讨会", en: "Ethics & Psyche", icon: Icons.HeartPulse, desc: "心理学研究、科技伦理边界探讨。" },
+              { name: "墨枢编辑部", en: "InkPivot Editorial", icon: Icons.PenTool, desc: "文学艺术创作、《墨枢》校刊编撰。" },
+              { name: "航拍技术部", en: "Aerial Photography", icon: Icons.Rocket, desc: "专业航拍支持、校园大型活动记录。" },
+              { name: "摄影技术部", en: "Photography Unit", icon: Icons.Camera, desc: "光影艺术创作、纪实摄影。" },
+              { name: "无线电技术部", en: "Radio & Telecom", icon: Icons.Radio, desc: "无线电通联、业余卫星通信。" },
+              { name: "OC与概念设计部", en: "Concept Design", icon: Icons.Palette, desc: "原创角色设计、世界观构建。" },
+              { name: "通用医学部", en: "General Medicine", icon: Icons.Stethoscope, desc: "急救技能普及、医学常识研讨。" },
+              { name: "第九艺术开发部", en: "Game Development", icon: Icons.Gamepad2, desc: "独立游戏策划、美术与程序实现。" },
+            ]
+          },
+          {
+            id: "SAFETY",
+            name: "安全科",
+            enName: "Safety Div",
+            lead: "CSO (安全主管)",
+            color: "border-red-600",
+            bg: "bg-red-600/10",
+            departments: [
+              { name: "安全总科", en: "General Safety", icon: Icons.ShieldAlert, desc: "场地安全监管、应急预案制定与秩序维护。" }
+            ]
+          }
+        ]
+      };
+
+      const LEADERSHIP = [
+        { title: "CTO", role: "技术主管", desc: "统领科研科，决定技术路线与资源分配" },
+        { title: "CAO", role: "行政主管", desc: "统领事务科，负责制度规划与人事调动" },
+        { title: "CCO", role: "综合主管", desc: "统领综合科，协调校方需求与大型活动" },
+        { title: "CSO", role: "安全主管", desc: "统领安全科，全权负责风险控制与合规" },
+      ];
+
+      const RECRUITMENT_STEPS = [
+        { step: "01", title: "宣讲与初识", desc: "观看招新视频，了解联合体愿景与架构" },
+        { step: "02", title: "递交申请", desc: "前往A416领取并填写申请表，投入回执袋" },
+        { step: "03", title: "行政初审", desc: "人事部进行背景审核与荣格分类归档" },
+        { step: "04", title: "录用通知", desc: "发放盖章录用信与部门专属胸牌" },
+      ];
+
+      // --- CUSTOM HOOK: SCROLL REVEAL ---
+      // Replaces Framer Motion's whileInView
+      function useScrollReveal() {
+        const ref = useRef(null);
+        const [isVisible, setIsVisible] = useState(false);
+
+        useEffect(() => {
+          const observer = new IntersectionObserver(
+            ([entry]) => {
+              if (entry.isIntersecting) {
+                setIsVisible(true);
+                observer.disconnect(); // Only animate once
+              }
+            },
+            { threshold: 0.1 }
+          );
+
+          if (ref.current) observer.observe(ref.current);
+          return () => observer.disconnect();
+        }, []);
+
+        return [ref, isVisible];
+      }
+
+      // --- COMPONENTS ---
+
+      // 1. Hero
+      const Hero = () => {
+        return (
+          <section id="hero" className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-anstc-black">
+            <div className="absolute inset-0 z-0 pointer-events-none">
+              <div className="absolute inset-0 bg-grid-pattern opacity-20"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-anstc-black/60 to-anstc-black"></div>
+              {/* CSS Animations instead of Framer Motion */}
+              <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse"></div>
+              <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse" style={{animationDelay: '1s'}}></div>
+            </div>
+
+            <div className="relative z-10 text-center px-4 max-w-6xl mx-auto">
+              <div className="mb-6 flex justify-center animate-[fadeInUp_1s_ease-out]">
+                <span className="inline-block border border-white/10 bg-white/5 backdrop-blur-sm px-4 py-1.5 rounded-full text-blue-400 font-mono text-xs md:text-sm tracking-[0.2em]">
+                  EST. 2024 · XUZHOU NO.1 MIDDLE SCHOOL
+                </span>
+              </div>
+
+              <h1 className="text-5xl md:text-7xl lg:text-9xl font-black text-white tracking-tighter mb-4 font-tech animate-[fadeInUp_1s_ease-out_0.2s_both]">
+                渊穹科技<br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-purple-400">
+                  综合联合体
+                </span>
+              </h1>
+
+              <p className="text-lg md:text-2xl text-gray-400 max-w-3xl mx-auto font-light mb-12 animate-[fadeInUp_1s_ease-out_0.5s_both]">
+                Aether Nexus Science And Technology Corporation
+              </p>
+
+              <div className="flex flex-col md:flex-row gap-6 justify-center items-center animate-[fadeInUp_1s_ease-out_0.8s_both]">
+                <a href="#structure" className="group relative px-8 py-4 bg-white text-black font-bold font-mono tracking-widest overflow-hidden skew-x-[-10deg] hover:skew-x-0 transition-transform">
+                  <span className="relative z-10 group-hover:text-white transition-colors duration-300">探索架构 / STRUCTURE</span>
+                  <div className="absolute inset-0 bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out"></div>
+                </a>
+                <a href="#join" className="px-8 py-4 border border-white/20 text-white font-mono tracking-widest hover:bg-white/5 transition-colors skew-x-[-10deg] hover:skew-x-0">
+                  加入我们 / RECRUITMENT
+                </a>
+              </div>
+            </div>
+
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
+              <Icons.ChevronDown className="w-8 h-8 text-white/30" />
+            </div>
+          </section>
+        );
+      };
+
+      // 2. Vision Section
+      const VisionCard = ({ icon: Icon, title, desc }) => {
+        const [ref, isVisible] = useScrollReveal();
+        return (
+          <div 
+            ref={ref}
+            className={`bg-anstc-panel p-6 border border-white/5 hover:border-blue-500/30 transition-all duration-500 group reveal ${isVisible ? 'active' : ''}`}
+          >
+            <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center text-blue-400 mb-4 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+              <Icon size={24} />
+            </div>
+            <h4 className="text-xl font-bold text-white mb-3">{title}</h4>
+            <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
+          </div>
+        );
+      };
+
+      const Vision = () => {
+        const [refHeader, isVisibleHeader] = useScrollReveal();
+        const [refStudio, isVisibleStudio] = useScrollReveal();
+
+        return (
+          <section className="py-24 bg-anstc-dark relative border-t border-white/5">
+            <div className="container mx-auto px-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-20">
+                <div ref={refHeader} className={`reveal ${isVisibleHeader ? 'active' : ''}`}>
+                  <h2 className="text-4xl font-bold font-tech mb-6">
+                    <span className="text-blue-500">2025-2027</span> 远景规划
+                  </h2>
+                  <div className="prose prose-invert max-w-none text-gray-400">
+                    <p className="text-lg leading-relaxed mb-4">
+                      渊穹科技综合联合体（ANSTC）正经历从社团向“综合联合体”的历史性改组。我们致力于构建一个结构清晰、管理科学、运行高效的学生自组织平台。
+                    </p>
+                    <p className="text-lg leading-relaxed">
+                      以兴趣为导向，以项目为驱动，我们打破学科壁垒，将课本知识转化为改变现实的技术力量。
+                    </p>
+                  </div>
+                </div>
+                
+                <div 
+                  ref={refStudio} 
+                  className={`bg-gradient-to-br from-yellow-500/10 to-transparent border border-yellow-500/20 p-8 rounded-lg relative overflow-hidden reveal ${isVisibleStudio ? 'active' : ''}`}
+                >
+                  <div className="absolute top-0 right-0 p-4 opacity-20">
+                    <Icons.Star size={120} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-yellow-500 mb-2 font-tech">{ORG_STRUCTURE.STUDIO.name}</h3>
+                  <p className="text-xs text-yellow-500/60 font-mono mb-6 uppercase">{ORG_STRUCTURE.STUDIO.enName}</p>
+                  <p className="text-gray-300 mb-6 relative z-10">{ORG_STRUCTURE.STUDIO.description}</p>
+                  <div className="flex flex-wrap gap-2 relative z-10">
+                    {ORG_STRUCTURE.STUDIO.roles.map(role => (
+                      <span key={role} className="px-3 py-1 bg-yellow-500/20 text-yellow-200 text-xs border border-yellow-500/30 rounded">
+                        {role}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <VisionCard 
+                  icon={Icons.GraduationCap}
+                  title="学长指导制度"
+                  desc="联络已毕业校友，建立跨越年级的技术与资源共享网络，避免科研弯路，传承一中学生文化。"
+                />
+                <VisionCard 
+                  icon={Icons.Lightbulb}
+                  title="项目驱动机制"
+                  desc="鼓励学生自行组建个人工作室或项目组。从航模到代码，每一份热爱都值得被严肃对待。"
+                />
+                <VisionCard 
+                  icon={Icons.BookOpen}
+                  title="渊穹德育基金"
+                  desc="设立专项基金，将文创与技术转化的收益回馈母校，支持德育、心理及科学部门的校务活动。"
+                />
+              </div>
+            </div>
+          </section>
+        );
+      };
+
+      // 3. Organization Structure
+      const Organization = () => {
+        const [activeTab, setActiveTab] = useState(ORG_STRUCTURE.DIVISIONS[0].id);
+
+        return (
+          <section id="structure" className="py-24 bg-anstc-black relative">
+            <div className="container mx-auto px-6">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-5xl font-bold mb-4 font-tech">ORGANIZATION STRUCTURE</h2>
+                <div className="w-24 h-1 bg-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-500">核心架构与职能部门</p>
+              </div>
+
+              {/* Leadership Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-20">
+                {LEADERSHIP.map((leader, index) => {
+                  const [ref, isVisible] = useScrollReveal();
+                  return (
+                    <div
+                      key={leader.title}
+                      ref={ref}
+                      style={{ transitionDelay: `${index * 100}ms` }}
+                      className={`bg-anstc-panel border border-white/10 p-6 text-center group hover:border-white/30 transition-all reveal ${isVisible ? 'active' : ''}`}
+                    >
+                      <div className="text-4xl font-black text-white/10 font-tech mb-2 group-hover:text-blue-500/20 transition-colors">{leader.title}</div>
+                      <h3 className="text-xl font-bold text-white mb-1">{leader.role}</h3>
+                      <p className="text-xs text-gray-500">{leader.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Divisions Tabs */}
+              <div className="flex flex-wrap justify-center gap-4 mb-12">
+                {ORG_STRUCTURE.DIVISIONS.map((div) => (
+                  <button
+                    key={div.id}
+                    onClick={() => setActiveTab(div.id)}
+                    className={`px-6 py-3 font-mono text-sm tracking-widest border transition-all ${
+                      activeTab === div.id 
+                      ? `bg-white text-black border-white` 
+                      : 'bg-transparent text-gray-400 border-white/20 hover:border-white/50'
+                    }`}
+                  >
+                    {div.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Department Grid */}
+              <div className="min-h-[400px]">
+                  {ORG_STRUCTURE.DIVISIONS.map((div) => (
+                    activeTab === div.id && (
+                      <div
+                        key={div.id}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-[fadeInUp_0.5s_ease-out]"
+                      >
+                        {div.departments.map((dept, idx) => {
+                          const Icon = dept.icon;
+                          return (
+                            <div key={idx} className={`relative group overflow-hidden bg-anstc-panel border-l-2 ${div.color} p-6`}>
+                              <div className="flex justify-between items-start mb-4">
+                                <div className={`p-3 rounded bg-white/5 text-white group-hover:bg-white group-hover:text-black transition-colors duration-300`}>
+                                  <Icon size={24} />
+                                </div>
+                                <span className="text-[10px] font-mono text-gray-600 uppercase tracking-widest">{div.enName}</span>
+                              </div>
+                              <h4 className="text-lg font-bold text-white mb-1">{dept.name}</h4>
+                              <p className="text-xs font-mono text-gray-500 mb-4">{dept.en}</p>
+                              <div className="h-px w-full bg-white/10 mb-4"></div>
+                              <p className="text-sm text-gray-400 leading-relaxed">
+                                {dept.desc}
+                              </p>
+                              <div className={`absolute inset-0 ${div.bg} opacity-0 group-hover:opacity-20 transition-opacity pointer-events-none`}></div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  ))}
+              </div>
+            </div>
+          </section>
+        );
+      };
+
+      // 4. Activities
+      const Activities = () => {
+        return (
+          <section id="activities" className="py-24 bg-anstc-dark border-t border-white/5">
+            <div className="container mx-auto px-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 border border-white/10 divide-y lg:divide-y-0 lg:divide-x divide-white/10">
+                
+                {/* InkPivot */}
+                <div className="p-10 group hover:bg-white/5 transition-colors relative overflow-hidden">
+                  <Icons.Newspaper size={48} className="text-gray-600 mb-6 group-hover:text-white transition-colors" />
+                  <h3 className="text-2xl font-bold font-tech text-white mb-4">墨枢奇点新媒介报</h3>
+                  <p className="text-gray-400 leading-relaxed mb-6">
+                    每月一期的科技校刊。涵盖技术前沿、行业应用、心理健康及“断网补全计划”。这是我们的思想阵地。
+                  </p>
+                  <span className="text-xs font-mono text-blue-500 uppercase tracking-widest">InkPivot Editorial</span>
+                </div>
+
+                {/* Creative Station */}
+                <div className="p-10 group hover:bg-white/5 transition-colors relative overflow-hidden">
+                  <Icons.Palette size={48} className="text-gray-600 mb-6 group-hover:text-yellow-500 transition-colors" />
+                  <h3 className="text-2xl font-bold font-tech text-white mb-4">渊穹文创补给站</h3>
+                  <p className="text-gray-400 leading-relaxed mb-6">
+                    原创IP开发与周边设计。所得收益归入“渊穹德育与科研基金”，回馈校园建设。
+                  </p>
+                  <span className="text-xs font-mono text-yellow-500 uppercase tracking-widest">Creative Station</span>
+                </div>
+
+                {/* Tech Support */}
+                <div className="p-10 group hover:bg-white/5 transition-colors relative overflow-hidden">
+                  <Icons.Shield size={48} className="text-gray-600 mb-6 group-hover:text-green-500 transition-colors" />
+                  <h3 className="text-2xl font-bold font-tech text-white mb-4">校级技术支持</h3>
+                  <p className="text-gray-400 leading-relaxed mb-6">
+                    为校运会、大型集会提供专业航拍、摄影及无线电通讯保障。持证上岗，专业规范。
+                  </p>
+                  <span className="text-xs font-mono text-green-500 uppercase tracking-widest">Official Support</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      };
+
+      // 5. Recruitment
+      const Recruitment = () => {
+        return (
+          <section id="join" className="py-24 bg-anstc-black relative overflow-hidden">
+            <div className="absolute right-0 bottom-0 w-1/2 h-full bg-gradient-to-l from-blue-900/10 to-transparent pointer-events-none"></div>
+
+            <div className="container mx-auto px-6 relative z-10">
+              <div className="flex flex-col md:flex-row justify-between items-end mb-16">
+                <div>
+                  <h2 className="text-4xl font-bold text-white mb-2 font-tech">加入我们</h2>
+                  <p className="text-gray-500 font-mono">RECRUITMENT PROCESS FLOW</p>
+                </div>
+                <div className="hidden md:block text-right">
+                  <p className="text-blue-500 font-bold">NEXT INTAKE: AUTUMN 2025</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {RECRUITMENT_STEPS.map((step, idx) => {
+                  const [ref, isVisible] = useScrollReveal();
+                  return (
+                    <div
+                      key={step.step}
+                      ref={ref}
+                      style={{ transitionDelay: `${idx * 200}ms` }}
+                      className={`relative p-6 border-l border-white/20 bg-gradient-to-r from-white/5 to-transparent hover:border-blue-500 transition-all group reveal ${isVisible ? 'active' : ''}`}
+                    >
+                      <div className="text-5xl font-black text-white/5 absolute top-2 right-4 group-hover:text-blue-500/10 transition-colors font-tech">
+                        {step.step}
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-3 relative z-10">{step.title}</h3>
+                      <p className="text-sm text-gray-400 relative z-10">{step.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-16 text-center">
+                <p className="text-gray-400 mb-8 max-w-2xl mx-auto">
+                  <span className="text-white font-bold">特别提示：</span> 
+                  如果你拥有航拍、无线电、摄影等专业设备与技能，请在录用后直接联系人事部部长或行政主管，换取专业设备操作许可证。
+                </p>
+                <button className="px-12 py-4 bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors rounded-sm flex items-center gap-2 mx-auto">
+                  下载电子版申请书 <Icons.ArrowRight size={18} />
+                </button>
+              </div>
+            </div>
+          </section>
+        );
+      };
+
+      // 6. Footer
+      const Footer = () => {
+        return (
+          <footer className="bg-black border-t border-white/10 py-12">
+            <div className="container mx-auto px-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div className="col-span-1 md:col-span-2">
+                  <div className="flex items-center gap-2 mb-6">
+                    <div className="w-8 h-8 bg-blue-600 rounded-sm flex items-center justify-center text-xs font-bold text-white font-tech">A</div>
+                    <span className="font-bold font-tech text-xl text-white tracking-widest">ANSTC</span>
+                  </div>
+                  <p className="text-gray-500 text-sm leading-relaxed max-w-md">
+                    渊穹科技综合联合体 (Aether Nexus Science And Technology Corporation).<br/>
+                    徐州一中学生自主管理的科技前沿阵地。以渊博之识，探穹宇之极。
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-bold text-white mb-6 uppercase tracking-wider text-sm font-mono">联系方式</h4>
+                  <div className="space-y-4 text-gray-400 text-sm">
+                    <div className="flex items-center gap-3">
+                      <Icons.MapPin size={16} className="text-blue-500" />
+                      <span>江苏省徐州市第一中学 · 总部A416</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Icons.Mail size={16} className="text-blue-500" />
+                      <span>admin@anstc.edu.cn</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-white mb-6 uppercase tracking-wider text-sm font-mono">相关链接</h4>
+                  <div className="space-y-2 text-sm text-gray-400">
+                    <a href="#" className="block hover:text-blue-400 transition-colors">学校官网</a>
+                    <a href="#" className="block hover:text-blue-400 transition-colors">Github 仓库</a>
+                    <a href="#" className="block hover:text-blue-400 transition-colors">墨枢电子报刊</a>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-700 font-mono">
+                <p>&copy; 2025 ANSTC. All rights reserved.</p>
+                <p>DESIGNED BY ANSTC WEB DEV DIVISION (AI & IT)</p>
+              </div>
+            </div>
+          </footer>
+        );
+      };
+
+      // --- APP COMPONENT ---
+      
+      const NAV_LINKS = [
+        { name: '首页', href: '#hero' },
+        { name: '架构', href: '#structure' },
+        { name: '活动', href: '#activities' },
+        { name: '招新', href: '#join' },
+      ];
+
+      const App = () => {
+        const [isMenuOpen, setIsMenuOpen] = useState(false);
+        const [scrolled, setScrolled] = useState(false);
+
+        useEffect(() => {
+          const handleScroll = () => {
+            setScrolled(window.scrollY > 50);
+          };
+          window.addEventListener('scroll', handleScroll);
+          return () => window.removeEventListener('scroll', handleScroll);
+        }, []);
+
+        return (
+          <div className="bg-anstc-black text-white min-h-screen font-sans selection:bg-blue-500 selection:text-white">
+            <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-anstc-black/90 backdrop-blur-md border-b border-white/10 py-4' : 'bg-transparent py-6'}`}>
+              <div className="container mx-auto px-6 flex justify-between items-center">
+                <a href="#" className="flex items-center gap-3 group">
+                  <div className="w-8 h-8 bg-white text-black rounded-sm flex items-center justify-center font-bold font-tech group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                      A
+                  </div>
+                  <span className="font-bold text-lg tracking-wider font-tech hidden sm:block">ANSTC</span>
+                </a>
+
+                <div className="hidden md:flex items-center gap-8">
+                  {NAV_LINKS.map((link) => (
+                    <a 
+                      key={link.name} 
+                      href={link.href} 
+                      className="text-sm font-mono text-gray-300 hover:text-white transition-colors uppercase tracking-wider relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-blue-500 hover:after:w-full after:transition-all"
+                    >
+                      {link.name}
+                    </a>
+                  ))}
+                </div>
+
+                <button 
+                  className="md:hidden text-white hover:text-blue-400 transition-colors"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                >
+                  {isMenuOpen ? <Icons.X size={24} /> : <Icons.Menu size={24} />}
+                </button>
+              </div>
+            </nav>
+
+            {isMenuOpen && (
+              <div
+                className="fixed inset-0 z-40 bg-black pt-24 px-6 md:hidden animate-[fadeInUp_0.3s_ease-out]"
+              >
+                <div className="flex flex-col gap-6">
+                  {NAV_LINKS.map((link) => (
+                    <a
+                      key={link.name}
+                      href={link.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="text-2xl font-bold text-gray-300 hover:text-white border-b border-gray-800 pb-4 flex justify-between items-center"
+                    >
+                      {link.name}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <main>
+              <Hero />
+              <Vision />
+              <Organization />
+              <Activities />
+              <Recruitment />
+            </main>
+
+            <Footer />
+          </div>
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
